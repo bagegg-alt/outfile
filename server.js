@@ -32,7 +32,7 @@ const server = net.createServer((socket) => {
         passivePort = Math.floor(Math.random() * (65535 - 1024 + 1)) + 1024;
         dataSocket = net.createServer((dataSocket) => {
           auditPort = dataSocket.on('connection', (client) => {
-            //порт просто открывается
+            
           });
         });
 
@@ -55,6 +55,8 @@ const server = net.createServer((socket) => {
 
         break;
       case 'LIST':
+       
+         
         if (passivePort) {
           socket.write(`150 File status okay; about to open data connection.\r\n`);
           var str = "";
@@ -93,48 +95,18 @@ const server = net.createServer((socket) => {
         socket.write('213 2041\r\n')
         break;
       case 'RETR':
-        const filePath = path.join('./ftp_files', arg);
-        //fs.stat(filePath, (err, stats) => {
-        //  console.log(err)
-        //  console.log(stats.isFile())
-        //  if (err || !stats.isFile()) {
-        //    socket.write('550 File not found.\r\n');
-        //  } else {
-        //    socket.write('150 Opening data connection.\r\n');
-        //    const readStream = fs.createReadStream(filePath);
-        //    readStream.pipe(socket);
-        //    readStream.on('end', () => {
-        //      socket.write('226 Transfer complete.\r\n');
-        //    });
-        //  }
-        //});
-        try {
-          const stats = fs.statSync(filePath);
-          if (stats.isFile()) {
-            // Уведомляем о начале передачи данных
-            socket.write(`150 File status okay; about to open data connection\r\n`);
-
-            // Создаем новое соединение для передачи данных
-            const dataSocket = net.createConnection(DATA_PORT, 'localhost', () => {
-              const fileContent = fs.readFileSync(filePath);
-              dataSocket.write(fileContent);
-              dataSocket.end(); // Закрываем соединение после передачи
-            });
-
-            dataSocket.on('end', () => {
-              socket.write(`226 Transfer complete.\r\n`);
-            });
-
-            dataSocket.on('error', (err) => {
-              console.error('Data socket error:', err);
-              socket.write('426 Connection closed; transfer aborted.\r\n');
-            });
-          } else {
-            socket.write('550 File not found.\r\n');
+        filePath = path.join('./ftp_files', arg)
+        socket.write('150 Opening binary mode data connection\r\n');
+        fs.readFile(filePath, (err, data) => {
+          if (err) {
+            socket.write('550 Файл не найден\r\n');
+            return;
           }
-        } catch (err) {
-          socket.write('550 File not found.\r\n');
-        }
+          auditPort.write(data.toString('utf-8') + '\r\n');
+          auditPort.end('');
+          socket.write('226 Успешно\r\n');
+          console.log('завершен')
+        });
         break;
       case 'QUIT':
         socket.write('221 Goodbye.\r\n');
