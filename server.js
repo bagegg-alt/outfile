@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const server = net.createServer((socket) => {
-  let currentDir = '/';
+  let currentDir = '.';
 
   let user = null;
 
@@ -55,16 +55,14 @@ const server = net.createServer((socket) => {
 
         break;
       case 'LIST':
-       
-         
         if (passivePort) {
           socket.write(`150 File status okay; about to open data connection.\r\n`);
           var str = "";
-          const files = fs.readdirSync("/home/b/screen");
+          const files = fs.readdirSync("./ftp_files");
 
           files.forEach(file => {
             try {
-              const stats = fs.statSync(path.join('/home/b/screen', file));
+              const stats = fs.statSync(path.join('./ftp_files', file));
 
               const options = { 
                 month: 'short',
@@ -92,7 +90,19 @@ const server = net.createServer((socket) => {
         }
         break;
       case 'SIZE':
-        socket.write('213 2041\r\n')
+        filePath = path.join('./ftp_files', arg)
+        console.log(filePath)
+        fs.stat(filePath, (err, stats) => {
+          if (err) {
+            socket.write('550 \r\n')
+            return;
+          }
+          if (stats.isFile()) {
+            socket.write(`213 ${stats.size}\r\n`)
+          } else {
+            socket.write('550 \r\n')
+          }
+        })
         break;
       case 'RETR':
         filePath = path.join('./ftp_files', arg)
@@ -107,6 +117,29 @@ const server = net.createServer((socket) => {
           socket.write('226 Успешно\r\n');
           console.log('завершен')
         });
+        break;
+      case 'STOR':
+        filePath = path.join('./ftp_files', arg)
+        fileData = ''
+
+        socket.write('150 Opening binary mode data connection\r\n');
+
+        auditPort.on('data', (chunk) => {
+          console.log(chunk.toString('utf-8'))
+          fileData += chunk.toString('utf-8')
+        })
+
+        auditPort.on('end', () => {
+          fs.writeFile(filePath, fileData, (err) => {
+            if (err) {
+              auditPort.write('550 \r\n')
+              return;
+            }
+            auditPort.end()
+            socket.write('226 \r\n')
+            console.log('zavershen')
+          }) 
+        })
         break;
       case 'QUIT':
         socket.write('221 Goodbye.\r\n');
