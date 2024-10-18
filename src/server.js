@@ -2,30 +2,27 @@ const net = require('net');
 
 const hndl = require('./hndl/hndlCmds');
 
+const c = new (require('./conn'));
+
+
 const server = net.createServer((socket) => {
-  socket.write('220 Welcome to Node.js FTP Server\r\n');
 
-  class connect {
-    user = null;
-    currentDir = null; 
+  const secureSocket = require('./tlsSock')(socket);
 
-    auditSocket = null;
-    socket = socket; 
+  c.socket = secureSocket;
+  c.sock = socket;
 
-    cmd = null;
-    args = null;
-  }
 
-  const c = new connect();
+  secureSocket.write('220 Welcome to the FTPS server\r\n');
 
-  socket.on('data', (data) => {
+  secureSocket.on('data', (data) => {
     const command = data.toString().trim();
     [c.cmd, ...c.args] = command.split(' ');
 
     hndl[c.cmd] === undefined ? c.socket.write('502 \r\n') : hndl[c.cmd].call(c);
-  })
+  });
 
-  socket.on('error', (err) => {
+  secureSocket.on('error', (err) => {
     console.error('Socket error:', err);
   });
 });

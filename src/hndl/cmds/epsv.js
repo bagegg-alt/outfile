@@ -1,4 +1,5 @@
 const net = require('net');
+const tls = require('tls');
 
 var auditPort = null;
 
