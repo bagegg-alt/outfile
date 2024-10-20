@@ -2,6 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const net = require('net');
 
+const isPathSafe = require('../../auxiliary/isSafeDir');
+
 const options = { 
   month: 'short',
   day: '2-digit',
@@ -28,6 +30,10 @@ function modeToString(mode){
 module.exports = {
   cmd: 'LIST',
   hndl: function() {
+    filesPath = path.join(this.currentDir, this.args[0] || '');
+    if (!isPathSafe.call(this, filesPath)){
+      this.socket.write('530 \r\n');
+    }
     fs.readdir(this.currentDir, (err, files) => {
       if (err) {
         this.socket.write('550 Requested action not taken. Directory not found\r\n');

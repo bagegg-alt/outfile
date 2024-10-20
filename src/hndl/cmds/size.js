@@ -1,19 +1,40 @@
-const fs = require('fs');
+const fs = require('fs').promises;
+const path = require('path');
+
+function getSize(filesPath) {
+  return fs.stat(filesPath)
+    .then(stats => {
+      if(stats.isDirectory()){
+        return fs.readdir(filesPath)
+          .then(files => {
+            var listPromise = files.map(file => {
+              const filePath = path.join(filesPath, file);
+              return getSize(filePath);
+            })
+            return Promise.all(listPromise);
+          })
+          .then(sizes => {
+            return sizes.reduce((acc, cur) => {
+              return acc + cur;
+            }, 0);
+          });
+      } else {
+        return stats.size;
+      }
+    });
+}
 
 module.exports = {
   cmd: 'SIZE',
   hndl: function() {
-    filePath = path.join('./ftp_files', this.args[0])
-    fs.stat(filePath, (err, stats) => {
-      if (err) {
+    filesPath = path.join(this.currentDir, this.args[0]);
+
+    getSize(filesPath)
+      .then(sizes => {
+        this.socket.write(`213 ${sizes}\r\n`);
+      })
+      .catch(err => {
         this.socket.write('550 \r\n')
-        return;
-      }
-      if (stats.isFile()) {
-        this.socket.write(`213 ${stats.size}\r\n`)
-      } else {
-        this.socket.write('550 \r\n')
-      }
-    })
+      })
   }
 }

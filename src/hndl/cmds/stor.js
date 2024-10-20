@@ -1,9 +1,10 @@
 const fs = require('fs');
+const path = require('path');
 
 module.exports = {
   cmd: 'STOR',
   hndl: function() {
-    filePath = path.join('./ftp_files', this.args[0])
+    filePath = path.join(this.currentDir, this.args[0])
     fileData = ''
 
     this.socket.write('150 Opening binary mode data connection\r\n');
