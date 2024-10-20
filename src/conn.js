@@ -9,4 +9,6 @@ module.exports = class Connect {
 
   cmd = null;
   args = null;
+
+  rename = null;
 }

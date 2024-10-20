@@ -2,12 +2,11 @@ const net = require('net');
 
 const hndl = require('./hndl/hndlCmds');
 
-const c = new (require('./conn'));
-
 
 const server = net.createServer((socket) => {
-
   const secureSocket = require('./tlsSock')(socket);
+
+  const c = new (require('./conn'));
 
   c.socket = secureSocket;
   c.sock = socket;
