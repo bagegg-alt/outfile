@@ -1,28 +1,66 @@
 const fs = require('fs');
 const path = require('path');
 
+function handleTransferCompletion(readStream) {
+  readStream.on('end', () => {
+    this.auditSocket.end();
+    this.socket.write('226 успешно\r\n');
+console.timeEnd()
+  });
+
+  readStream.on('error', (err) => {
+    this.socket.write('550 файл не найден\r\n');
+  });
+}
+
+
+function stream(readStream) {
+  this.socket.write('150 binary\r\n');
+  
+  readStream.on('data', (chunk) => {
+    this.auditSocket.write(chunk);
+  });
+
+  handleTransferCompletion.call(this, readStream);
+}
+
+function block(readStream) {
+  this.socket.write('150 block\r\n');
+
+  readStream.on('data', (chunk) => {
+    //this.auditSocket.write(`${chunk.length}\r\n`);
+    this.auditSocket.write(chunk);
+  })
+
+  handleTransferCompletion.call(this, readStream);
+}
+
+
 module.exports = {
   cmd: 'RETR',
   hndl: function() {
-    filePath = path.join(this.currentDir, this.args[0])
-    const startPosition = this.startPosition || 0;
+    const filePath = path.join(this.currentDir, this.args[0]);
+    const startPos = this.startPosition || 0;
+    const blockSize = 10485760;
+    
 
-    this.socket.write('150 Opening binary mode data connection\r\n');
-
-
-    const readStream = fs.createReadStream(filePath, { start: startPosition });
-
-    readStream.on('data', (chunk) => {
-      this.auditSocket.write(chunk);
-    });
-
-    readStream.on('end', () => {
-      this.auditSocket.end();
-      this.socket.write('226 успешно\r\n');
-    });
-
-    readStream.on('error', (err) => {
-      this.socket.write('550 файл не найден\r\n');
-    });
+console.time();
+    switch(this.mode){
+      case 'B':
+        objRS = {
+          start: startPos,
+          highWaterMark: blockSize        
+        }
+        block.call(this, fs.createReadStream(filePath, objRS));
+        break;
+      case 'C':
+        break;
+      default:
+        objRS = {
+          start: startPos,
+          highWaterMark: 1        
+        }
+        stream.call(this, fs.createReadStream(filePath, objRS));
+    }
   }
 }

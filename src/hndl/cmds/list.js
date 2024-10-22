@@ -31,6 +31,7 @@ module.exports = {
   cmd: 'LIST',
   hndl: function() {
     filesPath = path.join(this.currentDir, this.args[0] || '');
+
     if (!isPathSafe.call(this, filesPath)){
       this.socket.write('530 \r\n');
     }

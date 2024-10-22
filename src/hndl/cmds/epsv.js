@@ -1,15 +1,15 @@
 const net = require('net');
 const tls = require('tls');
 
-var auditPort = null;
-
 module.exports = {
   cmd: 'EPSV',
   hndl: function() {
     const passivePort = Math.floor(Math.random() * (65535 - 1024 + 1)) + 1024;
 
     const dataSocket = net.createServer((dataSocket) => {
-      this.auditSocket = dataSocket.on('connection', (client) => {
+      const secureSocket = require('../../tlsSock.js')(dataSocket);
+      
+      this.auditSocket = secureSocket.on('connection', (client) => {
 
       });
     });
