@@ -26,6 +26,6 @@ const server = net.createServer((socket) => {
   });
 });
 
-server.listen(3000, '192.168.0.11', () => {
+server.listen(3000, '192.168.0.10', () => {
   console.log('FTP server is running on port 3000');
 });

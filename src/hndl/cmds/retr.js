@@ -5,7 +5,6 @@ function handleTransferCompletion(readStream) {
   readStream.on('end', () => {
     this.auditSocket.end();
     this.socket.write('226 успешно\r\n');
-console.timeEnd()
   });
 
   readStream.on('error', (err) => {
@@ -41,10 +40,9 @@ module.exports = {
   hndl: function() {
     const filePath = path.join(this.currentDir, this.args[0]);
     const startPos = this.startPosition || 0;
-    const blockSize = 10485760;
+    const blockSize = 1048576;
     
 
-console.time();
     switch(this.mode){
       case 'B':
         objRS = {
