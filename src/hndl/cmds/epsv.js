@@ -4,7 +4,7 @@ const tls = require('tls');
 module.exports = {
   cmd: 'EPSV',
   hndl: function() {
-    const passivePort = Math.floor(Math.random() * (65535 - 1024 + 1)) + 1024;
+    const passivePort = Math.floor(Math.random() * (65535 - 45535 + 1)) + 45535;
 
     const dataSocket = net.createServer((dataSocket) => {
       const secureSocket = require('../../tlsSock.js')(dataSocket);

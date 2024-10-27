@@ -1,11 +1,15 @@
 const fs = require('fs');
 const path = require('path');
 
-const dir = '/home/b/pr/nodejs/outfile/src/hndl/cmds';
+const dir = './hndl/cmds/';
+const relativeDir = './cmds';
+
 const cmds = [];
 
 fs.readdirSync(dir).forEach(file => {
-  cmds.push(require(path.join(dir, file)));
+  if (path.extname(file) === '.js') {
+    cmds.push(require('./' + path.join(relativeDir, file)));
+  }
 })
 
 module.exports = cmds.reduce((acc, cur) => {
