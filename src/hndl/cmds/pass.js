@@ -5,9 +5,10 @@ module.exports = {
   hndl: function() {
     if (this.args[0] !== 'a'){
       this.socket.write('530 access denied\r\n');
-    }
-    this.currentDir = path.join('../ftp_files', this.user);
+    } else {
+      this.currentDir = path.join('../ftp_files', this.user);
 
-    this.socket.write('230 User logged in, proceed.\r\n');
+      this.socket.write('230 User logged in, proceed.\r\n');
+    }
   }
 }
