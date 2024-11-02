@@ -1,6 +1,7 @@
 const net = require('net');
 
 const hndl = require('./hndl/hndlCmds');
+const mongo = require('./models/db.js');
 
 
 const server = net.createServer((socket) => {
@@ -10,7 +11,7 @@ const server = net.createServer((socket) => {
 
   c.socket = secureSocket;
   c.sock = socket;
-
+  c.mongo = mongo;
 
   secureSocket.write('220 Welcome to the FTPS server\r\n');
 
@@ -27,5 +28,7 @@ const server = net.createServer((socket) => {
 });
 
 server.listen(3000, '192.168.0.12', () => {
+  mongo.start();
+
   console.log('FTP server is running on port 3000');
 });

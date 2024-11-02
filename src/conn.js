@@ -1,17 +1,27 @@
-module.exports = class Connect {
-  user = null;
-  currentDir = null; 
-  
-  startPosition = null;
-  mode = null;
-  stru = null;
+module.exports = class {
+  // режимы
+  mode;
+  stru;
 
-  auditSocket = null;
-  socket = null; 
-  sock = null; 
+  // сокеты
+  auditSocket;
+  socket; 
+  sock; 
 
-  cmd = null;
-  args = null;
+  // команды и аргументы
+  cmd;
+  args;
 
-  rename = null;
+  // переменные для связи между командами
+  user;
+  anonim;
+  rename;
+  currentDir; 
+  startPosition;
+
+  //шифрование/дешифрование файлов
+  crypto;
+
+  //бд
+  mongo;
 }

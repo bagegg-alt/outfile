@@ -1,6 +1,9 @@
 {
   "dependencies": {
+    "bson": "^6.9.0",
+    "crypto": "^1.0.1",
     "fs": "^0.0.1-security",
+    "mongodb": "^3.0.0",
     "net": "^1.0.2",
     "path": "^0.12.7",
     "tls": "^0.0.1"
