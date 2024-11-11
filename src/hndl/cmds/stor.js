@@ -3,6 +3,8 @@ const path = require('path');
 
 const zlib = require('zlib');
 
+var salt, iv;
+
 function handlerWriteStream(writeStream, stream){
   this.socket.write(`150 ${this.mode}\r\n`);
 
@@ -10,6 +12,8 @@ function handlerWriteStream(writeStream, stream){
   writeStream.on('finish', () => {
     this.auditSocket.end();
     this.socket.write('226 успешно\r\n');
+
+    this.mongo.pushFileInfo(this.user, this.args[0], iv, salt);
   });
 
   writeStream.on('error', (err) => {
@@ -28,20 +32,26 @@ function handlerWriteStream(writeStream, stream){
 
 module.exports = {
   cmd: 'STOR',
-  hndl: function() {
+  hndl: async function() {
     const filePath = path.join(this.currentDir, this.args[0])
 
-    const gunzip = zlib.createGunzip();
+    const cipherSI = await this.crypto.getCipher();
+    const { cipher } = cipherSI;
+    
+    ( { salt, iv } = cipherSI );
 
     const writeStream = fs.createWriteStream(filePath);
     switch(this.mode){
       case 'C':
-        this.auditSocket.pipe(gunzip);
+        const gunzip = zlib.createGunzip();
+
+        this.auditSocket.pipe(cipher).pipe(gunzip);
 
         handlerWriteStream.call(this, writeStream, gunzip);
         break;
       default:
-        handlerWriteStream.call(this, writeStream, this.auditSocket);
+        this.auditSocket.pipe(cipher);
+        handlerWriteStream.call(this, writeStream, cipher);
         break;
     }
   }

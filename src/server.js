@@ -15,11 +15,12 @@ const server = net.createServer((socket) => {
 
   secureSocket.write('220 Welcome to the FTPS server\r\n');
 
-  secureSocket.on('data', (data) => {
+  secureSocket.on('data', async (data) => {
     const command = data.toString().trim();
     [c.cmd, ...c.args] = command.split(' ');
+    c.cmd = c.cmd.toUpperCase();
 
-    hndl[c.cmd] === undefined ? c.socket.write('502 \r\n') : hndl[c.cmd].call(c);
+    hndl[c.cmd] === undefined ? c.socket.write('502 \r\n') : await hndl[c.cmd].call(c);
   });
 
   secureSocket.on('error', (err) => {

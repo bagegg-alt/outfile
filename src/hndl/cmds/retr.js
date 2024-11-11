@@ -49,30 +49,35 @@ function block(readStream) {
 
 module.exports = {
   cmd: 'RETR',
-  hndl: function() {
+  hndl: async function() {
     const filePath = path.join(this.currentDir, this.args[0]);
 
     const startPos = this.startPosition || 0;
     const blockSize = 1024 * 1024; //1мб
+
+    const { iv, salt } = await this.mongo.getFileInfo(this.user, this.args[0]);
     
+    const decipher = await this.crypto.getDecipher(iv, salt);
     switch(this.mode){
       case 'B':
         objRS = {
           start: startPos,
           highWaterMark: blockSize        
         }
+        readStream = fs.createReadStream(filePath, objRS);
 
-        block.call(this, fs.createReadStream(filePath, objRS));
+        readStream.pipe(decipher);
+
+        block.call(this, decipher);
         break;
       case 'C':
         objRS = {
           start: startPos
         }
-
         readStream = fs.createReadStream(filePath, objRS);
 
         const gzip = zlib.createGzip();
-        readStream.pipe(gzip);
+        readStream.pipe(decipher).pipe(gzip);
 
         compressed.call(this, gzip);
         break;
@@ -81,8 +86,11 @@ module.exports = {
           start: startPos,
           highWaterMark: 64 * 1024 
         }
+        readStream = fs.createReadStream(filePath, objRS);
 
-        stream.call(this, fs.createReadStream(filePath, objRS));
+        readStream.pipe(decipher);
+
+        stream.call(this, decipher);
     }
   }
 }
