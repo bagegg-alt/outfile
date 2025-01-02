@@ -55,7 +55,7 @@ module.exports = {
     const startPos = this.startPosition || 0;
     const blockSize = 1024 * 1024; //1мб
 
-    const { iv, salt } = await this.mongo.getFileInfo(this.user, this.args[0]);
+    const { iv, salt } = await this.mongoUsers.getFileInfo(this.user, this.args[0]);
     
     const decipher = await this.crypto.getDecipher(iv, salt);
     switch(this.mode){

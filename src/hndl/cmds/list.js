@@ -42,32 +42,35 @@ module.exports = {
       }
 
       this.socket.write(`150 Here comes the directory listing\r\n`);
+      if(files.length != 0) {
+        var listPromise = files.map(file => {
+          return new Promise((resolve, reject) => {
+            const filePath = path.join(this.currentDir, file);
+            fs.stat(filePath, (err, stats) => {
+              if (err) {
+                reject(`${file} - Error retrieving file info`);
+              } else {
+                const size = stats.size.toString().padStart(10, ' ');
+                const mode = modeToString(stats.mode);
+                const mtime = stats.mtime.toLocaleString('en-US', options).replace(',', '');
 
-      var listPromise = files.map(file => {
-        return new Promise((resolve, reject) => {
-          const filePath = path.join(this.currentDir, file);
-          fs.stat(filePath, (err, stats) => {
-            if (err) {
-              reject(`${file} - Error retrieving file info`);
-            } else {
-              const size = stats.size.toString().padStart(10, ' ');
-              const mode = modeToString(stats.mode);
-              const mtime = stats.mtime.toLocaleString('en-US', options).replace(',', '');
-
-              resolve(`${mode}  ${size}  ${mtime}  ${file}`);
-            }
+                resolve(`${mode}  ${size}  ${mtime}  ${file}`);
+              }
+            });
           });
         });
-      });
-
-      Promise.all(listPromise).then(list => {
-        this.auditSocket.write(`${list.reduce((acc, cur) => {
-          return acc + cur + '\r\n';
-        }, '')}`);
+        Promise.all(listPromise).then(list => {
+          this.auditSocket.write(`${list.reduce((acc, cur) => {
+            return acc + cur + '\r\n';
+          }, '')}`);
+          this.auditSocket.end('');
+          this.socket.write('226 Directory send OK\r\n');
+        });
+      } else {
+        this.auditSocket.write(' -- empty -- \r\n');
         this.auditSocket.end('');
         this.socket.write('226 Directory send OK\r\n');
-      });
+      }
     });
   }
 }
-

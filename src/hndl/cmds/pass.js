@@ -11,7 +11,7 @@ module.exports = {
       this.socket.write('230 User logged in, proceed.\r\n');
     } else {
       try {
-        this.mongo.auth(this.user, this.args[0])
+        this.mongoUsers.auth(this.user, this.args[0])
           .then(isAuth => {
             if (isAuth) {
               this.currentDir = path.join('../ftp_files', this.user);

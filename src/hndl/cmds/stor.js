@@ -5,7 +5,7 @@ const zlib = require('zlib');
 
 var salt, iv;
 
-function handlerWriteStream(writeStream, stream){
+async function handlerWriteStream(writeStream, stream){ // здесь
   this.socket.write(`150 ${this.mode}\r\n`);
 
 
@@ -13,7 +13,7 @@ function handlerWriteStream(writeStream, stream){
     this.auditSocket.end();
     this.socket.write('226 успешно\r\n');
 
-    this.mongo.pushFileInfo(this.user, this.args[0], iv, salt);
+    this.mongoUsers.pushFileInfo(this.user, this.args[0], iv, salt);
   });
 
   writeStream.on('error', (err) => {

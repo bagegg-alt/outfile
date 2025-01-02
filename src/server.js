@@ -1,7 +1,10 @@
 const net = require('net');
 
 const hndl = require('./hndl/hndlCmds');
+
 const mongo = require('./models/db.js');
+const mongoUsers = require('./models/usersDB.js');
+const mongoTxns = require('./models/txnsDB.js');
 
 
 const server = net.createServer((socket) => {
@@ -11,7 +14,10 @@ const server = net.createServer((socket) => {
 
   c.socket = secureSocket;
   c.sock = socket;
+
   c.mongo = mongo;
+  c.mongoUsers = mongoUsers;
+  c.mongoTxns = mongoTxns;
 
   secureSocket.write('220 Welcome to the FTPS server\r\n');
 

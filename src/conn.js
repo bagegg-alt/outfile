@@ -24,4 +24,6 @@ module.exports = class {
 
   //бд
   mongo;
+  mongoUsers;
+  mongoTxns;
 }
