@@ -40,6 +40,17 @@ const pushFileInfoDB = async (username, file, iv, salt) => {
   )
 }
 
+const pullFileInfoDB = async (username, files) => {
+  const users = init('Users');
+
+  await users.updateOne(
+    { name: username },
+    { $pull: {
+      files: { file: { $in: files } }
+    } }
+  )
+}
+
 const getFileInfoDB = async (username, file) => {
   const users = init('Users');
   const user = await users.findOne({ name: username });
@@ -73,6 +84,7 @@ module.exports = {
   isExist: exist,
   insert: insertDB,
   pushFileInfo: pushFileInfoDB,
+  pullFileInfo: pullFileInfoDB,
   getFileInfo: getFileInfoDB,
   getPubRsa: getPubRsaDB,
   getPrvRsaEnc: getPrvRsaEncDB,
